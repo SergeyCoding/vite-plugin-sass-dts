@@ -88,9 +88,16 @@ export const formatExportType = (key: string, type = `'${key}'`) =>
   `  readonly '${key}': ${type};`
 
 export const formatWriteFilePath = (file: string, options?: PluginOptions) => {
-  let path = file
+  let path1 = path.resolve(file)
   const src = options?.sourceDir
   const dist = options?.outputDir
+
+  if (options?.debug) {
+    console.log('\n---')
+    console.log('path', path1)
+    console.log('src', src)
+    console.log('dist', dist)
+  }
 
   if (src && !isAbsolute(src)) {
     throw new Error('vite-plugin-sass-dts sourceDir must be an absolute path')
@@ -100,10 +107,15 @@ export const formatWriteFilePath = (file: string, options?: PluginOptions) => {
   }
 
   if (src && dist) {
-    path = path.replace(src, dist)
+    path1 = path1.replace(src, dist)
   }
 
-  return formatWriteFileName(path, options?.legacyFileFormat)
+  if (options?.debug) {
+    console.log('path Result = ', path1)
+    console.log()
+  }
+
+  return formatWriteFileName(path1, options?.legacyFileFormat)
 }
 
 export const formatWriteFileName = (file: string, legacyFormat = false) => {
