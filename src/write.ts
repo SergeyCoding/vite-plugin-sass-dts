@@ -88,34 +88,47 @@ export const formatExportType = (key: string, type = `'${key}'`) =>
   `  readonly '${key}': ${type};`
 
 export const formatWriteFilePath = (file: string, options?: PluginOptions) => {
-  let path1 = path.resolve(file)
-  const src = options?.sourceDir
-  const dist = options?.outputDir
+  const srcDir = options?.sourceDir
+  const outDir = options?.outputDir
 
   if (options?.debug) {
-    console.log('\n---')
-    console.log('path', path1)
-    console.log('src', src)
-    console.log('dist', dist)
+    console.log('\n[formatWriteFilePath]')
+    console.log('  Input file:', file)
+    console.log('  Source dir:', srcDir)
+    console.log('  Output dir:', outDir)
   }
 
-  if (src && !isAbsolute(src)) {
+  if (srcDir && !isAbsolute(srcDir)) {
     throw new Error('vite-plugin-sass-dts sourceDir must be an absolute path')
   }
-  if (dist && !isAbsolute(dist)) {
+  if (outDir && !isAbsolute(outDir)) {
     throw new Error('vite-plugin-sass-dts outputDir must be an absolute path')
   }
 
-  if (src && dist) {
-    path1 = path1.replace(src, dist)
+  if (!srcDir || !outDir) {
+    const result = formatWriteFileName(
+      path.resolve(file),
+      options?.legacyFileFormat
+    )
+
+    if (options?.debug) {
+      console.log('  Result (no dirs replaced):', result)
+    }
+
+    return result
   }
+
+  const relativePath = path.relative(srcDir, path.resolve(file))
+  const newPath = path.join(outDir, relativePath)
+  const result = formatWriteFileName(newPath, options?.legacyFileFormat)
 
   if (options?.debug) {
-    console.log('path Result = ', path1)
-    console.log()
+    console.log('  Relative path:', relativePath)
+    console.log('  New path:', newPath)
+    console.log('  Final result:', result)
   }
 
-  return formatWriteFileName(path1, options?.legacyFileFormat)
+  return result
 }
 
 export const formatWriteFileName = (file: string, legacyFormat = false) => {
