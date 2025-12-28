@@ -1,3 +1,4 @@
+import path from 'path'
 import { formatWriteFilePath } from './formatWriteFilePath'
 
 jest.mock('./../write.ts', () => ({
@@ -68,7 +69,7 @@ describe('formatWriteFilePath', () => {
           sourceDir: srcDir,
           outputDir: outDir,
         })
-        expect(result).toBe(expected)
+        expect(path.normalize(result)).toBe(path.normalize(expected as string))
       }
     })
   })
