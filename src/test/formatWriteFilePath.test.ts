@@ -43,6 +43,7 @@ describe('formatWriteFilePath', () => {
       srcDir: 'relative/src',
       outDir: '/dist',
       shouldThrow: true,
+      errorMessage: 'must be an absolute path',
     },
     // UNC src with non-UNC out (should throw)
     {
@@ -50,6 +51,7 @@ describe('formatWriteFilePath', () => {
       srcDir: '\\\\server\\share',
       outDir: 'C:\\dist',
       shouldThrow: true,
+      errorMessage: 'if file is UNC, then testDir must be UNC',
     },
     // Missing srcDir or outDir
     {
@@ -67,19 +69,23 @@ describe('formatWriteFilePath', () => {
     },
   ]
 
-  testCases.forEach(({ input, srcDir, outDir, expected, shouldThrow }) => {
-    it(`should handle ${JSON.stringify({ input, srcDir, outDir })}`, () => {
-      if (shouldThrow) {
-        expect(() =>
-          formatWriteFilePath(input, { sourceDir: srcDir, outputDir: outDir })
-        ).toThrow('must be an absolute path')
-      } else {
-        const result = formatWriteFilePath(input, {
-          sourceDir: srcDir,
-          outputDir: outDir,
-        })
-        expect(path.normalize(result)).toBe(path.normalize(expected as string))
-      }
-    })
-  })
+  testCases.forEach(
+    ({ input, srcDir, outDir, expected, shouldThrow, errorMessage }) => {
+      it(`should handle ${JSON.stringify({ input, srcDir, outDir })}`, () => {
+        if (shouldThrow) {
+          expect(() =>
+            formatWriteFilePath(input, { sourceDir: srcDir, outputDir: outDir })
+          ).toThrow(errorMessage)
+        } else {
+          const result = formatWriteFilePath(input, {
+            sourceDir: srcDir,
+            outputDir: outDir,
+          })
+          expect(path.normalize(result)).toBe(
+            path.normalize(expected as string)
+          )
+        }
+      })
+    }
+  )
 })
