@@ -137,15 +137,15 @@ export const formatWriteFilePath = (file: string, options?: PluginOptions) => {
   const srcDir = options?.sourceDir
   const outDir = options?.outputDir
 
-  if (!srcDir || !outDir) {
-    return formatWriteFileName(file, options?.legacyFileFormat)
-  }
-
-  if (!isAbsolutePlatform(file, srcDir)) {
+  if (srcDir && !isAbsolutePlatform(file, srcDir)) {
     throw new Error('vite-plugin-sass-dts sourceDir must be an absolute path')
   }
-  if (!isAbsolutePlatform(file, outDir)) {
+  if (outDir && !isAbsolutePlatform(file, outDir)) {
     throw new Error('vite-plugin-sass-dts outputDir must be an absolute path')
+  }
+
+  if (!srcDir || !outDir) {
+    return formatWriteFileName(file, options?.legacyFileFormat)
   }
 
   const relativePath = path.relative(srcDir, file)
