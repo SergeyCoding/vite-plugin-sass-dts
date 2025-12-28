@@ -3,11 +3,7 @@ import { formatWriteFilePath } from './formatWriteFilePath'
 
 jest.mock('./../write.ts', () => ({
   formatWriteFileName: jest.fn((p, legacy: boolean) => {
-    console.log(p)
-    if (legacy) {
-      return p
-    }
-    return p
+    return legacy ? p : p
   }),
 }))
 
@@ -34,11 +30,25 @@ describe('formatWriteFilePath', () => {
       outDir: '/dist',
       expected: '/dist/styles/file.scss',
     },
+    // UNC paths
+    {
+      input: '\\\\server\\share\\src\\file.scss',
+      srcDir: '\\\\server\\share\\src',
+      outDir: '\\\\server\\share\\dist',
+      expected: '\\\\server\\share\\dist\\file.scss',
+    },
     // Relative path in src (should throw)
     {
       input: '/src/styles/file.scss',
       srcDir: 'relative/src',
       outDir: '/dist',
+      shouldThrow: true,
+    },
+    // UNC src with non-UNC out (should throw)
+    {
+      input: '\\\\server\\share\\file.scss',
+      srcDir: '\\\\server\\share',
+      outDir: 'C:\\dist',
       shouldThrow: true,
     },
     // Missing srcDir or outDir
@@ -58,7 +68,6 @@ describe('formatWriteFilePath', () => {
   ]
 
   testCases.forEach(({ input, srcDir, outDir, expected, shouldThrow }) => {
-    console.log(input, srcDir, outDir, expected, shouldThrow)
     it(`should handle ${JSON.stringify({ input, srcDir, outDir })}`, () => {
       if (shouldThrow) {
         expect(() =>
