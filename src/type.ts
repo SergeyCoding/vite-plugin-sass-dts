@@ -19,7 +19,6 @@ export type PluginOptions = {
   prettierFilePath?: string
   useNamedExport?: boolean
   legacyFileFormat?: boolean
-  debug?: boolean
 }
 
 export type CSS = { localStyle: string; globalStyle?: string }
