@@ -67,6 +67,58 @@ describe('formatWriteFilePath', () => {
       outDir: '/src',
       expected: '/src/styles/file.scss',
     },
+    {
+      input: '/src/styles/file.scss',
+      srcDir: undefined,
+      outDir: undefined,
+      expected: '/src/styles/file.scss',
+    },
+    {
+      input: '/src/styles/file.scss',
+      srcDir: '/src',
+      outDir: undefined,
+      expected: '/src/styles/file.scss',
+    },
+    {
+      input: '/src/styles/file.scss',
+      srcDir: undefined,
+      outDir: '/dist',
+      expected: '/src/styles/file.scss',
+    },
+    {
+      input: 'C:\\src\\file.scss',
+      srcDir: 'C:\\src',
+      outDir: undefined,
+      expected: 'C:\\src\\file.scss',
+    },
+    {
+      input: '\\\\server\\share\\file.scss',
+      srcDir: undefined,
+      outDir: '\\\\server\\dist',
+      expected: '\\\\server\\share\\file.scss',
+    },
+    // Добавить в testCases:
+    {
+      input: '/src/styles/file.scss',
+      srcDir: undefined,
+      outDir: 'relative/dist', // неабсолютный
+      shouldThrow: true,
+      errorMessage: 'must be an absolute path',
+    },
+    {
+      input: '/src/styles/file.scss',
+      srcDir: 'relative/src', // неабсолютный
+      outDir: undefined,
+      shouldThrow: true,
+      errorMessage: 'must be an absolute path',
+    },
+    {
+      input: '/src/styles/file.scss',
+      srcDir: 'relative/src', // неабсолютный
+      outDir: 'relative/dist', // неабсолютный
+      shouldThrow: true,
+      errorMessage: 'must be an absolute path',
+    },
   ]
 
   testCases.forEach(
