@@ -1,12 +1,11 @@
 import { writeFile } from 'node:fs'
-import { dirname, basename } from 'node:path'
+import path, { dirname, basename, isAbsolute } from 'node:path'
 import prettier from 'prettier'
 const { format } = prettier
 
 import { type Options } from 'prettier'
 import { ContentReplacer, PluginOptions } from 'type'
 import { getRelativePath } from './util'
-import path from 'path'
 import { mkdir } from 'node:fs/promises'
 
 export const writeToFile = async (
@@ -90,7 +89,7 @@ export const formatExportType = (key: string, type = `'${key}'`) =>
 /**
  * Checks if two paths are in the same absolute path format.
  *
- * This function verifies that both paths follow the same format:
+ * This function verifies that both paths follow the same absolute format:
  * - Windows drive format (e.g., `C:\path`)
  * - UNIX format (e.g., `/path`)
  * - UNC format (e.g., `\\server\share`)
@@ -98,7 +97,7 @@ export const formatExportType = (key: string, type = `'${key}'`) =>
  * @param absoluteDir - The reference absolute path. Must be an absolute path.
  * @param testDir - The path to check against the reference format.
  *
- * @returns `true` if both paths are in the same format, `false` otherwise.
+ * @returns `true` if `testDir` is an absolute path and both paths are in the same format, `false` otherwise.
  *
  * @throws {Error} If `absoluteDir` is not an absolute path.
  * @throws {Error} If `absoluteDir` is a UNC path but `testDir` is not.
@@ -108,7 +107,7 @@ export const formatExportType = (key: string, type = `'${key}'`) =>
  * - For non-UNC paths, the format is determined by the presence of a drive letter (`:`).
  */
 const isAbsolutePlatform = (absoluteDir: string, testDir: string): boolean => {
-  if (!path.isAbsolute(absoluteDir)) {
+  if (!isAbsolute(absoluteDir)) {
     throw new Error('vite-plugin-sass-dts file must be an absolute path')
   }
 
@@ -121,16 +120,16 @@ const isAbsolutePlatform = (absoluteDir: string, testDir: string): boolean => {
 
   // UNC paths format (\\SRV-MAIN\Docs\Report.docx)
   if (testDir.startsWith('\\\\')) {
-    return path.isAbsolute(testDir)
+    return isAbsolute(testDir)
   }
 
   // Windows drive format (C:\path)
   if (absoluteDir.includes(':')) {
-    return path.isAbsolute(testDir) && testDir.includes(':')
+    return isAbsolute(testDir) && testDir.includes(':')
   }
 
   // UNIX format (/path) or other non-Windows formats
-  return path.isAbsolute(testDir) && !testDir.includes(':')
+  return isAbsolute(testDir) && !testDir.includes(':')
 }
 
 export const formatWriteFilePath = (file: string, options?: PluginOptions) => {
