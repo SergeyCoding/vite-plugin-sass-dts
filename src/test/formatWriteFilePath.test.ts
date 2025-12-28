@@ -1,31 +1,75 @@
-import { PluginOptions } from 'type'
-import * as path from 'path'
 import { formatWriteFilePath } from './formatWriteFilePath'
 
-// // Мокаем вторую функцию из того же модуля
-// jest.mock('./write', () => {
-//   const original = jest.requireActual('./write')
-//   return {
-//     ...original,
-//     formatWriteFileName: jest.fn((p) => p + '.d.ts'),
-//   }
-// })
-
-// jest.mock('./../write.ts', () => ({
-//   formatWriteFileName: jest.fn((p, legacy: boolean) => {
-//     if (legacy) {
-//       return p
-//     }
-//     return p
-//   }),
-// }))
+jest.mock('./../write.ts', () => ({
+  formatWriteFileName: jest.fn((p, legacy: boolean) => {
+    console.log(p)
+    if (legacy) {
+      return p
+    }
+    return p
+  }),
+}))
 
 describe('formatWriteFilePath', () => {
-  it('should replace srcDir with outDir', () => {
-    const result = formatWriteFilePath('/src/styles/file.scss.d.ts', {
-      sourceDir: '/src',
-      outputDir: '/dist',
-    } satisfies PluginOptions)
-    expect(result).toBe(path.join('/dist', 'styles', 'file.scss.d.ts'))
+  const testCases = [
+    // Unix-style paths
+    {
+      input: '/src/styles/file.scss',
+      srcDir: '/src',
+      outDir: '/dist',
+      expected: '/dist/styles/file.scss',
+    },
+    // Windows-style paths
+    {
+      input: 'C:\\src\\styles\\file.scss',
+      srcDir: 'C:\\src',
+      outDir: 'C:\\dist',
+      expected: 'C:\\dist\\styles\\file.scss',
+    },
+    // Mixed slashes
+    {
+      input: '/src\\styles/file.scss',
+      srcDir: '/src',
+      outDir: '/dist',
+      expected: '/dist/styles/file.scss',
+    },
+    // Relative path in src (should throw)
+    {
+      input: '/src/styles/file.scss',
+      srcDir: 'relative/src',
+      outDir: '/dist',
+      shouldThrow: true,
+    },
+    // Missing srcDir or outDir
+    {
+      input: '/src/styles/file.scss',
+      srcDir: undefined,
+      outDir: '/dist',
+      expected: '/src/styles/file.scss',
+    },
+    // Same dir (no replacement)
+    {
+      input: '/src/styles/file.scss',
+      srcDir: '/src',
+      outDir: '/src',
+      expected: '/src/styles/file.scss',
+    },
+  ]
+
+  testCases.forEach(({ input, srcDir, outDir, expected, shouldThrow }) => {
+    console.log(input, srcDir, outDir, expected, shouldThrow)
+    it(`should handle ${JSON.stringify({ input, srcDir, outDir })}`, () => {
+      if (shouldThrow) {
+        expect(() =>
+          formatWriteFilePath(input, { sourceDir: srcDir, outputDir: outDir })
+        ).toThrow('must be an absolute path')
+      } else {
+        const result = formatWriteFilePath(input, {
+          sourceDir: srcDir,
+          outputDir: outDir,
+        })
+        expect(result).toBe(expected)
+      }
+    })
   })
 })
